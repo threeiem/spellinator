@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+
+file_left="words.left"
+file_right="words.right"
+
+function expressionSide() {
+
+  side=$1
+  size=$2
+
+  right="[yhnujmikolp]"
+  left="[qwertasdfgzxcv]"
+
+  for i in $(seq 1 $size); do
+    case $side in
+      left)
+        pattern="${pattern}${left}"
+        ;;
+      right)
+        pattern="${pattern}${right}"
+        ;;
+    esac
+  done
+
+  echo "${pattern}"
+}
+
+exportSide() {
+
+  side=$1
+  lengthMin=$2
+  lengthMax=$3 
+
+  # Remove the old file.
+  case $side in
+    left)
+      if [[ -w $file_left ]]
+      then
+        rm $file_left        
+      elif [[ ! -e $file_left ]]
+      then
+        echo "Creating word file."
+        touch $file_left
+      else
+        echo "Sad Trombone:Unable to update ${file_left}"
+      fi
+      ;;
+    right)
+      if [[ -w $file_right ]]
+      then
+        rm $file_right        
+      elif [[ ! -e $file_right ]]
+      then
+        echo "Creating word file."
+        touch $file_right
+      else
+        echo "Unable to update ${file_right}"
+      fi
+      ;;
+  esac
+
+  # Load with words.
+  for i in $(seq $lengthMin $lengthMax); do
+    echo "words.${i} >> "
+    case $side in
+      left)
+        cat words.${i}|grep $(expressionSide ${side} ${i})|uniq|sort >> ${file_left}
+        ;;
+      right)
+        cat words.${i}|grep $(expressionSide ${side} ${i})|uniq|sort >> ${file_right}
+        ;;
+    esac
+  done
+}
+
+case $1 in
+  left|right)
+    exportSide $1 2 8
+    ;;
+  *)
+    echo "Huh?"
+    ;;
+esac
